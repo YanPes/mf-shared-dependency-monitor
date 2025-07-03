@@ -1,0 +1,10 @@
+{
+  "name": "Module Federation Shared Dependency Monitor",
+  "description": "A small browser extension showing version mismatches inside the Module Fedeation runtime",
+  "version": "0.1",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "./assets/favicon-32x32.png"
+  }
+}
