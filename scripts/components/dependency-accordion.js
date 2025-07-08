@@ -4,7 +4,7 @@ import BadgeComponent from "./badge-component.js";
  *
  * @param name {string}
  * @param content
- * @returns {HTMLDivElement}
+ * @returns {HTMLLIElement}
  * @constructor
  */
 
@@ -27,6 +27,7 @@ function DependencyAccordion(name, content) {
 
   dependencyAccordionDomNode.classList.add(`dependency-accordion`);
   headerDomNode.classList.add("dependency-accordion-header");
+  contentDomNode.classList.add("dependency-accordion-content");
 
   if (isInSync) {
     dependencyAccordionDomNode.classList.add("dependency-accordion-in-sync");

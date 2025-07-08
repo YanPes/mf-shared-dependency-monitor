@@ -5,7 +5,7 @@
  */
 
 function BadgeComponent(type) {
-  const badge = document.createElement('div');
+  const badge = document.createElement('span');
 
   badge.innerText = type;
 
