@@ -12,7 +12,7 @@ function DependencyAccordion(name, content) {
   let isInSync = false;
   let isExpanded = false;
 
-  const dependencyAccordionDomNode = document.createElement('div');
+  const dependencyAccordionDomNode = document.createElement('li');
   const headerDomNode = document.createElement('div');
   const nameDomNode = document.createElement('h3');
   const badgeDomNode = BadgeComponent(isInSync ? "In Sync" : "Out of Sync");
