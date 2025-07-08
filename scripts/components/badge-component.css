@@ -1,0 +1,16 @@
+.badge {
+    border-radius: 4px;
+    padding: 4px 16px;
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    width: fit-content;
+}
+
+.badge-sync {
+    background-color: #16C47F;
+}
+
+.badge-out-of-sync {
+    background-color: #FF9D23;
+}
