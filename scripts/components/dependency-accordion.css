@@ -1,0 +1,29 @@
+.dependency-accordion {
+    padding: 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+}
+
+.dependency-accordion:last-child {
+    margin-bottom: 0;
+}
+
+.dependency-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dependency-accordion-header > h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.dependency-accordion-in-sync {
+    background-color: rgba(22, 196, 127, .16);
+}
+
+.dependency-accordion-out-of-sync {
+    background-color: rgba(255, 157, 35, .16);
+}
