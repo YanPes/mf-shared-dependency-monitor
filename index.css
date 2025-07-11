@@ -1,8 +1,0 @@
-@import url('./scripts/components/badge-component.css');
-@import url('./scripts/components/dependency-accordion.css');
-
-body {
-    font-family: 'Inter', sans-serif;
-    margin: 24px;
-}
-

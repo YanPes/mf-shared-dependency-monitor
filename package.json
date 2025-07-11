@@ -1,0 +1,17 @@
+{
+  "name": "mf-shared-dependency-monitor",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "rsbuild start",
+    "build": "rsbuild build && cp ./public/manifest.json dist/"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.4.6",
+    "@rsbuild/plugin-react": "^1.3.4",
+    "typescript": "^5.8.3"
+  }
+}
