@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Module Federation Shared Dependency Monitor",
+  "description": "A small browser extension showing version mismatches inside the Module Fedeation runtime",
+  "version": "0.1",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "tabs",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "inject-payload.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "inject-post-message.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "./popup.html",
+    "default_icon": "./favicon-32x32.png"
+  }
+}
