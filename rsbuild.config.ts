@@ -1,11 +1,11 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
-import {pluginSass } from '@rsbuild/plugin-sass';
+import { pluginSass } from '@rsbuild/plugin-sass';
 
 export default defineConfig({
   source: {
     entry: {
-      popup: './src/index.tsx',
+      popup: './src/popup/index.tsx',
     }
   },
   plugins: [

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rsbuild start",
-    "build": "rsbuild build && cp ./public/manifest.json dist/"
+    "build": "rsbuild build && cp ./public/manifest.json dist/ && cp ./scripts/inject-payload.js dist/ && cp ./scripts/inject-post-message.js dist/ && cp ./scripts/background.js dist/"
   },
   "dependencies": {
     "react": "^18",
@@ -13,6 +13,8 @@
     "@rsbuild/core": "^1.4.6",
     "@rsbuild/plugin-react": "^1.3.4",
     "@rsbuild/plugin-sass": "^1.3.3",
+    "@types/chrome": "^0.1.1",
+    "chrome-types": "^0.1.361",
     "typescript": "^5.8.3"
   }
 }
