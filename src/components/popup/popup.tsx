@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import styles from './popup.module.scss';
 import { DependencyContainer } from '../dependency-container/dependeny-container.tsx';
-import { __PRELOADED_MAP__ } from '../../../static-data.ts';
 
 export const Popup = () => {
-
+  const [federationData, setFederationData] = useState<any>(null);
   const getFederationDataFromCurrentTab = async () => {
     const [tab] = await chrome?.tabs.query({ active: true, currentWindow: true });
     console.log(tab)
     chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId: Number(tab.id) },
       func: () => {
         const keyValue = (window as any).__FEDERATION__;
         chrome.runtime.sendMessage({ keyValue });
@@ -18,10 +17,14 @@ export const Popup = () => {
   }
 
   useEffect(() => {
-    chrome.storage.local.get('__FEDERATION__', (result) => {
-      console.log('Retrieved federation data:', result.__FEDERATION__);
-    });
-  }, []);
+    if (!federationData) {
+      chrome.storage.local.get('__FEDERATION__', (result) => {
+        setFederationData(result?.__FEDERATION__?.payload)
+      });
+    }
+  }, [federationData]);
+
+  console.log("federation data ", JSON.parse(federationData))
 
   return (
     <>
@@ -35,6 +38,7 @@ export const Popup = () => {
         <section>
           <h2>Preloaded Maps</h2>
           <ul>
+            {/* {federationData && Object.keys(federationData).map(item => <li>{JSON.stringify(item)}</li>)} */}
           </ul>
         </section>
 

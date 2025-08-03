@@ -1,8 +1,18 @@
-(function () {
-  const payload = {
-    __PRELOADED_MAP__: window.__FEDERATION__.__PRELOADED_MAP__,
-    __SHARE__: window.__FEDERATION__.__SHARE__
+// This function is invoked inside the host tab.
+// It sends the __FEDERATION__ window runtime object via post message event.
 
-  }
-  window.postMessage({ payload: JSON.stringify(payload) }, '*');
-})();
+// Safely stringify __FEDERATION__ avoiding circular refs
+function safeStringify(obj) {
+  const seen = new WeakSet();
+  return JSON.stringify(obj, function(key, value) {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return "[Circular]";
+      }
+      seen.add(value);
+    }
+    return value;
+  }, 2); // 2 for pretty-printing
+}
+
+window.postMessage({ payload: safeStringify(window?.__FEDERATION__) }, '*');
