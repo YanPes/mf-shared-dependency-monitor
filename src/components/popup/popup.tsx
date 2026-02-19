@@ -19,6 +19,7 @@ export interface MFRemotesPayload {
   remotesFromHost: RemoteInfo[];
   remotesFromRemotes: RemoteInfo[];
   sharedDependencies: ExtractedSharedDep[];
+  fetchedEntryUrls: string[];
   hostName: string | null;
   hasFederation: boolean;
   pageUrl?: string;
@@ -29,6 +30,7 @@ export const Popup = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("remotes");
+  const [showConfigured, setShowConfigured] = useState(false);
 
   const refresh = async () => {
     setLoading(true);
@@ -65,6 +67,7 @@ export const Popup = () => {
       const fromHostByEntry = new Map<string, RemoteInfo>();
       const fromRemotesByEntry = new Map<string, RemoteInfo>();
       const sharedByName = new Map<string, ExtractedSharedDep>();
+      const fetchedUrls = new Set<string>();
       let hasFederation = false;
       for (const r of results) {
         const p = r?.result as MFRemotesPayload | undefined;
@@ -78,6 +81,7 @@ export const Popup = () => {
           if (remote.entry && !fromHostByEntry.has(remote.entry) && !fromRemotesByEntry.has(remote.entry))
             fromRemotesByEntry.set(remote.entry, remote);
         }
+        for (const url of p.fetchedEntryUrls || []) fetchedUrls.add(url);
         for (const sd of p.sharedDependencies || []) {
           const existing = sharedByName.get(sd.sharedName);
           if (!existing) {
@@ -105,11 +109,12 @@ export const Popup = () => {
         remotesFromHost: Array.from(fromHostByEntry.values()),
         remotesFromRemotes: Array.from(fromRemotesByEntry.values()),
         sharedDependencies: sharedDeps,
+        fetchedEntryUrls: Array.from(fetchedUrls),
         hostName: (Array.from(fromHostByEntry.values())[0] ?? Array.from(fromRemotesByEntry.values())[0])?.hostName ?? null,
         hasFederation,
         pageUrl: (results[0]?.result as MFRemotesPayload)?.pageUrl,
       };
-      setData(payload ?? { remotesFromHost: [], remotesFromRemotes: [], sharedDependencies: [], hostName: null, hasFederation: false });
+      setData(payload ?? { remotesFromHost: [], remotesFromRemotes: [], sharedDependencies: [], fetchedEntryUrls: [], hostName: null, hasFederation: false });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to scan");
       setData(null);
@@ -133,12 +138,21 @@ export const Popup = () => {
     return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
 
-  const remotesFromHost = data?.remotesFromHost ?? [];
-  const remotesFromRemotes = data?.remotesFromRemotes ?? [];
+  const allRemotesFromHost = data?.remotesFromHost ?? [];
+  const allRemotesFromRemotes = data?.remotesFromRemotes ?? [];
+  const fetchedEntryUrls = new Set(data?.fetchedEntryUrls ?? []);
   const sharedDeps = data?.sharedDependencies ?? [];
   const hasFederation = data?.hasFederation ?? false;
-  const totalRemotes = remotesFromHost.length + remotesFromRemotes.length;
   const mismatchCount = sharedDeps.filter((s) => s.hasMismatch).length;
+
+  const isFetched = (entry: string) => fetchedEntryUrls.has(entry);
+  const remotesFromHost = showConfigured
+    ? allRemotesFromHost
+    : allRemotesFromHost.filter((r) => isFetched(r.entry));
+  const remotesFromRemotes = showConfigured
+    ? allRemotesFromRemotes
+    : allRemotesFromRemotes.filter((r) => isFetched(r.entry));
+  const totalRemotes = remotesFromHost.length + remotesFromRemotes.length;
 
   return (
     <div className={styles.popup}>
@@ -182,17 +196,33 @@ export const Popup = () => {
           </p>
         )}
         {!error && hasFederation && activeTab === "remotes" && (
-          <>
+          <div className={styles.remotesContent}>
+            <div className={styles.remotesHeader}>
+              <p className={styles.count}>
+                {totalRemotes > 0
+                  ? `${totalRemotes} remote${totalRemotes !== 1 ? "s" : ""} ${showConfigured ? "configured" : "fetched"}`
+                  : "Remotes"}
+              </p>
+              <label className={styles.toggle}>
+                <input
+                  type="checkbox"
+                  checked={showConfigured}
+                  onChange={(e) => setShowConfigured(e.target.checked)}
+                />
+                <span>Include configured</span>
+              </label>
+            </div>
             {totalRemotes === 0 && (
               <p className={styles.empty}>
-                No remotes connected. The host may not have remotes configured.
+                {showConfigured
+                  ? "No remotes configured."
+                  : allRemotesFromHost.length + allRemotesFromRemotes.length > 0
+                    ? "No remotes fetched yet. Enable “Include configured” to see all configured remotes."
+                    : "No remotes connected. The host may not have remotes configured."}
               </p>
             )}
             {totalRemotes > 0 && (
-              <section className={styles.remotes}>
-                <p className={styles.count}>
-                  {totalRemotes} remote{totalRemotes !== 1 ? "s" : ""} connected
-                </p>
+              <>
                 {remotesFromHost.length > 0 && (
                   <div className={styles.group}>
                     <h3 className={styles.groupTitle}>From host</h3>
@@ -217,9 +247,9 @@ export const Popup = () => {
                     </ul>
                   </div>
                 )}
-              </section>
+              </>
             )}
-          </>
+          </div>
         )}
         {!error && hasFederation && activeTab === "shared-deps" && (
           <SharedDepsTab sharedDeps={sharedDeps} />

@@ -23,6 +23,7 @@ export type ExtractorResult = {
   remotesFromHost: ExtractedRemote[];
   remotesFromRemotes: ExtractedRemote[];
   sharedDependencies: ExtractedSharedDep[];
+  fetchedEntryUrls: string[];
   hostName: string | null;
   hasFederation: boolean;
   pageUrl: string;
@@ -107,6 +108,17 @@ export function createExtractor(): () => ExtractorResult {
         }
       }
     }
+
+    const fetchedEntryUrls: string[] = [];
+    try {
+      const entries = (performance as Performance).getEntriesByType?.("resource") || [];
+      for (const e of entries) {
+        const url = ((e as PerformanceResourceTiming).name || String(e)).toString();
+        if (url.includes("mf-manifest.json") || url.includes("remoteEntry.js")) {
+          fetchedEntryUrls.push(url);
+        }
+      }
+    } catch (_) {}
 
     if (fromHost.size === 0 && fromRemotes.size === 0) {
       try {
@@ -198,6 +210,7 @@ export function createExtractor(): () => ExtractorResult {
       remotesFromHost: Array.from(fromHost.values()),
       remotesFromRemotes: Array.from(fromRemotes.values()),
       sharedDependencies: sharedDeps,
+      fetchedEntryUrls,
       hostName: (Array.from(fromHost.values())[0] ?? Array.from(fromRemotes.values())[0])?.hostName ?? null,
       hasFederation: !!federation || fromHost.size > 0 || fromRemotes.size > 0,
       pageUrl: location.href,
