@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import styles from "./popup.module.scss";
 import { RemoteCard } from "../remote-card/remote-card";
+import { SharedDepsTab } from "../shared-deps-tab/shared-deps-tab";
 import { createExtractor } from "../../extractor";
+import type { ExtractedSharedDep } from "../../extractor";
+
+export type TabId = "remotes" | "shared-deps";
 
 export interface RemoteInfo {
   hostName: string;
@@ -14,6 +18,7 @@ export interface RemoteInfo {
 export interface MFRemotesPayload {
   remotesFromHost: RemoteInfo[];
   remotesFromRemotes: RemoteInfo[];
+  sharedDependencies: ExtractedSharedDep[];
   hostName: string | null;
   hasFederation: boolean;
   pageUrl?: string;
@@ -23,6 +28,7 @@ export const Popup = () => {
   const [data, setData] = useState<MFRemotesPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("remotes");
 
   const refresh = async () => {
     setLoading(true);
@@ -58,6 +64,7 @@ export const Popup = () => {
 
       const fromHostByEntry = new Map<string, RemoteInfo>();
       const fromRemotesByEntry = new Map<string, RemoteInfo>();
+      const sharedByName = new Map<string, ExtractedSharedDep>();
       let hasFederation = false;
       for (const r of results) {
         const p = r?.result as MFRemotesPayload | undefined;
@@ -71,15 +78,38 @@ export const Popup = () => {
           if (remote.entry && !fromHostByEntry.has(remote.entry) && !fromRemotesByEntry.has(remote.entry))
             fromRemotesByEntry.set(remote.entry, remote);
         }
+        for (const sd of p.sharedDependencies || []) {
+          const existing = sharedByName.get(sd.sharedName);
+          if (!existing) {
+            sharedByName.set(sd.sharedName, { ...sd });
+          } else {
+            const versionSet = new Set([...existing.versions, ...sd.versions]);
+            const modMap = new Map(existing.modules.map((m) => [`${m.moduleName}:${m.version}`, m]));
+            for (const m of sd.modules) modMap.set(`${m.moduleName}:${m.version}`, m);
+            sharedByName.set(sd.sharedName, {
+              sharedName: sd.sharedName,
+              versions: Array.from(versionSet),
+              modules: Array.from(modMap.values()),
+              hasMismatch: versionSet.size > 1,
+            });
+          }
+        }
       }
+      const sharedDeps = Array.from(sharedByName.values()).sort((a, b) => {
+        const aMis = a.hasMismatch ? 1 : 0;
+        const bMis = b.hasMismatch ? 1 : 0;
+        if (bMis !== aMis) return bMis - aMis;
+        return a.sharedName.localeCompare(b.sharedName);
+      });
       const payload: MFRemotesPayload = {
         remotesFromHost: Array.from(fromHostByEntry.values()),
         remotesFromRemotes: Array.from(fromRemotesByEntry.values()),
+        sharedDependencies: sharedDeps,
         hostName: (Array.from(fromHostByEntry.values())[0] ?? Array.from(fromRemotesByEntry.values())[0])?.hostName ?? null,
         hasFederation,
         pageUrl: (results[0]?.result as MFRemotesPayload)?.pageUrl,
       };
-      setData(payload ?? { remotesFromHost: [], remotesFromRemotes: [], hostName: null, hasFederation: false });
+      setData(payload ?? { remotesFromHost: [], remotesFromRemotes: [], sharedDependencies: [], hostName: null, hasFederation: false });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to scan");
       setData(null);
@@ -105,13 +135,15 @@ export const Popup = () => {
 
   const remotesFromHost = data?.remotesFromHost ?? [];
   const remotesFromRemotes = data?.remotesFromRemotes ?? [];
+  const sharedDeps = data?.sharedDependencies ?? [];
   const hasFederation = data?.hasFederation ?? false;
   const totalRemotes = remotesFromHost.length + remotesFromRemotes.length;
+  const mismatchCount = sharedDeps.filter((s) => s.hasMismatch).length;
 
   return (
     <div className={styles.popup}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Module Federation Remotes</h1>
+        <h1 className={styles.title}>Module Federation</h1>
         <button
           className={styles.refreshBtn}
           onClick={refresh}
@@ -122,6 +154,24 @@ export const Popup = () => {
         </button>
       </header>
 
+      <nav className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === "remotes" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("remotes")}
+        >
+          Remotes
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("shared-deps")}
+        >
+          Shared deps
+          {mismatchCount > 0 && (
+            <span className={styles.badge}>{mismatchCount}</span>
+          )}
+        </button>
+      </nav>
+
       <main className={styles.main}>
         {error && (
           <p className={styles.error}>{error}</p>
@@ -131,41 +181,48 @@ export const Popup = () => {
             No Module Federation runtime detected on this page.
           </p>
         )}
-        {!error && hasFederation && totalRemotes === 0 && !loading && (
-          <p className={styles.empty}>
-            No remotes connected. The host may not have remotes configured.
-          </p>
+        {!error && hasFederation && activeTab === "remotes" && (
+          <>
+            {totalRemotes === 0 && (
+              <p className={styles.empty}>
+                No remotes connected. The host may not have remotes configured.
+              </p>
+            )}
+            {totalRemotes > 0 && (
+              <section className={styles.remotes}>
+                <p className={styles.count}>
+                  {totalRemotes} remote{totalRemotes !== 1 ? "s" : ""} connected
+                </p>
+                {remotesFromHost.length > 0 && (
+                  <div className={styles.group}>
+                    <h3 className={styles.groupTitle}>From host</h3>
+                    <ul className={styles.list}>
+                      {remotesFromHost.map((r, i) => (
+                        <li key={`host-${r.entry}-${i}`}>
+                          <RemoteCard remote={r} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {remotesFromRemotes.length > 0 && (
+                  <div className={styles.group}>
+                    <h3 className={styles.groupTitle}>Loaded by remotes</h3>
+                    <ul className={styles.list}>
+                      {remotesFromRemotes.map((r, i) => (
+                        <li key={`remote-${r.entry}-${i}`}>
+                          <RemoteCard remote={r} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </section>
+            )}
+          </>
         )}
-        {!error && totalRemotes > 0 && (
-          <section className={styles.remotes}>
-            <p className={styles.count}>
-              {totalRemotes} remote{totalRemotes !== 1 ? "s" : ""} connected
-            </p>
-            {remotesFromHost.length > 0 && (
-              <div className={styles.group}>
-                <h3 className={styles.groupTitle}>From host</h3>
-                <ul className={styles.list}>
-                  {remotesFromHost.map((r, i) => (
-                    <li key={`host-${r.entry}-${i}`}>
-                      <RemoteCard remote={r} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {remotesFromRemotes.length > 0 && (
-              <div className={styles.group}>
-                <h3 className={styles.groupTitle}>Loaded by remotes</h3>
-                <ul className={styles.list}>
-                  {remotesFromRemotes.map((r, i) => (
-                    <li key={`remote-${r.entry}-${i}`}>
-                      <RemoteCard remote={r} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
+        {!error && hasFederation && activeTab === "shared-deps" && (
+          <SharedDepsTab sharedDeps={sharedDeps} />
         )}
       </main>
     </div>

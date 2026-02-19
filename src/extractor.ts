@@ -10,9 +10,19 @@ export type ExtractedRemote = {
   loadedBy?: string;
 };
 
+export type SharedDepUsage = { moduleName: string; version: string };
+
+export type ExtractedSharedDep = {
+  sharedName: string;
+  versions: string[];
+  modules: SharedDepUsage[];
+  hasMismatch: boolean;
+};
+
 export type ExtractorResult = {
   remotesFromHost: ExtractedRemote[];
   remotesFromRemotes: ExtractedRemote[];
+  sharedDependencies: ExtractedSharedDep[];
   hostName: string | null;
   hasFederation: boolean;
   pageUrl: string;
@@ -121,12 +131,77 @@ export function createExtractor(): () => ExtractorResult {
       } catch (_) {}
     }
 
+    const sharedDeps = (function extractSharedDeps(fed: any) {
+      const byName = new Map<string, Map<string, { moduleName: string; version: string }[]>>();
+      function add(sharedName: string, moduleName: string, version: string) {
+        if (!sharedName) return;
+        let perVersion = byName.get(sharedName);
+        if (!perVersion) {
+          perVersion = new Map();
+          byName.set(sharedName, perVersion);
+        }
+        let list = perVersion.get(version);
+        if (!list) {
+          list = [];
+          perVersion.set(version, list);
+        }
+        if (!list.some((u) => u.moduleName === moduleName)) list.push({ moduleName, version });
+      }
+      if (fed && typeof fed === "object") {
+        const moduleInfo = fed.moduleInfo;
+        if (moduleInfo && typeof moduleInfo === "object") {
+          for (const [key, info] of Object.entries(moduleInfo)) {
+            const shared = (info as any)?.shared;
+            if (!Array.isArray(shared)) continue;
+            const moduleName = key.includes(":") ? key.split(":")[0] : key;
+            for (const s of shared) {
+              const name = s?.sharedName;
+              const version = s?.version ?? "";
+              add(name, moduleName, version);
+            }
+          }
+        }
+        const share = fed.__SHARE__;
+        if (share && typeof share === "object") {
+          for (const [instanceName, scopes] of Object.entries(share)) {
+            if (!scopes || typeof scopes !== "object") continue;
+            for (const scopeData of Object.values(scopes)) {
+              if (!scopeData || typeof scopeData !== "object") continue;
+              for (const [pkgName, versions] of Object.entries(scopeData)) {
+                if (!versions || typeof versions !== "object") continue;
+                for (const [ver, meta] of Object.entries(versions)) {
+                  const m = meta as { useIn?: string[] };
+                  const consumers = m?.useIn ?? [instanceName];
+                  for (const mod of consumers) add(pkgName, mod, ver);
+                }
+              }
+            }
+          }
+        }
+      }
+      const result: { sharedName: string; versions: string[]; modules: { moduleName: string; version: string }[]; hasMismatch: boolean }[] = [];
+      for (const [sharedName, perVersion] of byName) {
+        const versions = Array.from(perVersion.keys());
+        const modules: { moduleName: string; version: string }[] = [];
+        for (const list of perVersion.values()) modules.push(...list);
+        result.push({ sharedName, versions, modules, hasMismatch: versions.length > 1 });
+      }
+      return result.sort((a, b) => {
+        const aMis = a.hasMismatch ? 1 : 0;
+        const bMis = b.hasMismatch ? 1 : 0;
+        if (bMis !== aMis) return bMis - aMis;
+        return a.sharedName.localeCompare(b.sharedName);
+      });
+    })(federation);
+
     return {
       remotesFromHost: Array.from(fromHost.values()),
       remotesFromRemotes: Array.from(fromRemotes.values()),
+      sharedDependencies: sharedDeps,
       hostName: (Array.from(fromHost.values())[0] ?? Array.from(fromRemotes.values())[0])?.hostName ?? null,
       hasFederation: !!federation || fromHost.size > 0 || fromRemotes.size > 0,
       pageUrl: location.href,
     };
   };
+
 }
