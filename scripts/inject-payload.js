@@ -1,16 +1,30 @@
-const script = document.createElement('script');
-script.src = chrome.runtime.getURL('inject-post-message.js');
-script.onload = () => script.remove();
-(document.head || document.documentElement).appendChild(script);
+// Content script - injects page-context script and forwards MF remote data
 
-// Listen on post message event and store the content inside the Chrome runtime event cue
-window.addEventListener('message', (event) => {
-  if (event.source !== window) return;
-  window.sessionStorage.setItem("__FEDERATION__", event.data.payload)
-  chrome.runtime.sendMessage({
-    type: "__FEDERATION__",
-    payload: event.data.payload
-  },
-    (response) => console.log("[Content Script] Sent data to extension: ", response)
-  )
+function injectExtractor() {
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("inject-post-message.js");
+  script.onload = () => script.remove();
+  (document.head || document.documentElement).appendChild(script);
+}
+
+injectExtractor();
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window || event.data?.type !== "MF_REMOTES_DATA") return;
+
+  chrome.runtime.sendMessage(
+    {
+      type: "MF_REMOTES_DATA",
+      payload: event.data.payload,
+    },
+    () => {}
+  );
+});
+
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.type === "MF_REFRESH") {
+    injectExtractor();
+    sendResponse({ ok: true });
+  }
+  return true;
 });

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rsbuild start",
-    "build": "rsbuild build && cp ./public/manifest.json dist/ && cp ./scripts/inject-payload.js dist/ && cp ./scripts/inject-post-message.js dist/ && cp ./scripts/background.js dist/"
+    "build": "rsbuild build && node scripts/postbuild.js"
   },
   "dependencies": {
     "react": "^18",
