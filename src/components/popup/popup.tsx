@@ -143,6 +143,7 @@ export const Popup = () => {
   const fetchedEntryUrls = new Set(data?.fetchedEntryUrls ?? []);
   const sharedDeps = data?.sharedDependencies ?? [];
   const hasFederation = data?.hasFederation ?? false;
+  const sharedDepsDisabled = !loading && !hasFederation;
   const mismatchCount = sharedDeps.filter((s) => s.hasMismatch).length;
 
   const isFetched = (entry: string) => fetchedEntryUrls.has(entry);
@@ -186,11 +187,15 @@ export const Popup = () => {
         </button>
         <button
           className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("shared-deps")}
+          onClick={() => {
+            if (!sharedDepsDisabled) setActiveTab("shared-deps");
+          }}
           id={sharedDepsTabId}
           role="tab"
           aria-selected={activeTab === "shared-deps"}
           aria-controls={sharedDepsPanelId}
+          aria-disabled={sharedDepsDisabled}
+          disabled={sharedDepsDisabled}
         >
           Shared dependencies
           {mismatchCount > 0 && (
