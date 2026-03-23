@@ -3,9 +3,15 @@
 }
 
 .empty {
-  color: #666;
+  color: #c0cae2;
   margin: 0;
   padding: 8px 0;
+}
+
+.summary {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #c5cee5;
 }
 
 .section {
@@ -18,26 +24,24 @@
 
 .sectionTitleMismatch {
   margin: 0 0 4px 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #b45309;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #ffc1db;
+  letter-spacing: 0.03em;
 }
 
 .sectionTitleOk {
   margin: 0 0 4px 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #047857;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #b9e8ca;
+  letter-spacing: 0.03em;
 }
 
 .hint {
   margin: 0 0 10px 0;
-  font-size: 12px;
-  color: #666;
+  font-size: 13px;
+  color: #afbad6;
 }
 
 .list {
@@ -50,29 +54,31 @@
 }
 
 .card {
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 14px;
+  border: 1px solid transparent;
 
   &.mismatch {
-    background: #fef3c7;
-    border: 1px solid #f59e0b;
+    background: #4b3042;
+    border-color: #db9eba;
   }
 
   &.ok {
-    background: #ecfdf5;
-    border: 1px solid #10b981;
+    background: #2f433e;
+    border-color: #8bcfb2;
   }
 }
 
 .name {
-  font-weight: 600;
+  font-weight: 650;
   margin-bottom: 4px;
+  color: #eef3ff;
 }
 
 .versions {
-  font-size: 12px;
-  color: #374151;
+  font-size: 13px;
+  color: #d0daef;
   margin-bottom: 6px;
 }
 
@@ -80,12 +86,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 11px;
-  color: #6b7280;
+  font-size: 12px;
+  color: #d1daee;
 }
 
 .module {
-  background: rgba(0, 0, 0, 0.06);
-  padding: 2px 6px;
-  border-radius: 4px;
+  background: rgba(236, 244, 255, 0.11);
+  border: 1px solid rgba(213, 225, 247, 0.28);
+  padding: 2px 7px;
+  border-radius: 999px;
 }
