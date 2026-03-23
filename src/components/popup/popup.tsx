@@ -125,17 +125,6 @@ export const Popup = () => {
 
   useEffect(() => {
     refresh();
-
-    const listener = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      area: string
-    ) => {
-      if (area === "local" && changes.mfRemotes?.newValue) {
-        setData(changes.mfRemotes.newValue as MFRemotesPayload);
-      }
-    };
-    chrome.storage.onChanged.addListener(listener);
-    return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
 
   const allRemotesFromHost = data?.remotesFromHost ?? [];
@@ -143,10 +132,17 @@ export const Popup = () => {
   const fetchedEntryUrls = new Set(data?.fetchedEntryUrls ?? []);
   const sharedDeps = data?.sharedDependencies ?? [];
   const hasFederation = data?.hasFederation ?? false;
-  const sharedDepsDisabled = !loading && !hasFederation;
   const mismatchCount = sharedDeps.filter((s) => s.hasMismatch).length;
+  const configuredRemotesTotal = allRemotesFromHost.length + allRemotesFromRemotes.length;
+  const hasConfiguredRemotes = configuredRemotesTotal > 0;
+  const sharedDepsBlockedByNoRemotes = !loading && !hasConfiguredRemotes;
+  const sharedDepsDisabled = !loading && (!hasFederation || sharedDepsBlockedByNoRemotes);
 
   const isFetched = (entry: string) => fetchedEntryUrls.has(entry);
+  const fetchedTotal =
+    allRemotesFromHost.filter((r) => isFetched(r.entry)).length +
+    allRemotesFromRemotes.filter((r) => isFetched(r.entry)).length;
+  const configuredTotal = configuredRemotesTotal;
   const remotesFromHost = showConfigured
     ? allRemotesFromHost
     : allRemotesFromHost.filter((r) => isFetched(r.entry));
@@ -154,6 +150,14 @@ export const Popup = () => {
     ? allRemotesFromRemotes
     : allRemotesFromRemotes.filter((r) => isFetched(r.entry));
   const totalRemotes = remotesFromHost.length + remotesFromRemotes.length;
+  const pageHost = (() => {
+    if (!data?.pageUrl) return null;
+    try {
+      return new URL(data.pageUrl).host;
+    } catch (_) {
+      return null;
+    }
+  })();
   const remotesTabId = "mf-tab-remotes";
   const sharedDepsTabId = "mf-tab-shared-deps";
   const remotesPanelId = "mf-panel-remotes";
@@ -162,7 +166,13 @@ export const Popup = () => {
   return (
     <div className={styles.popup} aria-label="Module Federation inspector">
       <header className={styles.header}>
-        <h1 className={styles.title}>Module Federation Inspector</h1>
+        <div className={styles.titleWrap}>
+          <p className={styles.eyebrow}>Runtime observability</p>
+          <h1 className={styles.title}>Module Federation Shared Dependency Monitor</h1>
+          <p className={styles.subtitle}>
+            {pageHost ? `Inspecting ${pageHost}` : "Inspecting active browser tab"}
+          </p>
+        </div>
         <button
           className={styles.refreshBtn}
           onClick={refresh}
@@ -186,7 +196,7 @@ export const Popup = () => {
           Remotes
         </button>
         <button
-          className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""}`}
+          className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""} ${sharedDepsBlockedByNoRemotes ? styles.tabDisabledNoRemotes : ""}`}
           onClick={() => {
             if (!sharedDepsDisabled) setActiveTab("shared-deps");
           }}
@@ -207,18 +217,43 @@ export const Popup = () => {
       </nav>
 
       <main className={styles.main} aria-live="polite">
+        {!error && hasFederation && (
+          <section className={styles.metrics} aria-label="Runtime summary">
+            <article className={styles.metricCard}>
+              <p className={styles.metricLabel}>Fetched remotes</p>
+              <p className={styles.metricValue}>{fetchedTotal}</p>
+            </article>
+            <article className={styles.metricCard}>
+              <p className={styles.metricLabel}>Configured remotes</p>
+              <p className={styles.metricValue}>{configuredTotal}</p>
+            </article>
+            <button
+              type="button"
+              className={`${styles.metricCard} ${styles.metricAction} ${mismatchCount > 0 ? styles.metricWarn : styles.metricOk}`}
+              onClick={() => {
+                if (!sharedDepsDisabled) setActiveTab("shared-deps");
+              }}
+              disabled={sharedDepsDisabled}
+              aria-label="Open Shared dependencies tab"
+              title={sharedDepsDisabled ? "Shared dependencies are not available" : "Open Shared dependencies"}
+            >
+              <p className={styles.metricLabel}>Version mismatches</p>
+              <p className={styles.metricValue}>{mismatchCount}</p>
+            </button>
+          </section>
+        )}
         {error && (
           <p className={styles.error} role="alert">
             {error}
           </p>
         )}
-        {!error && !hasFederation && !loading && (
-          <section className={styles.emptyState} aria-label="No runtime detected">
+        {!error && activeTab === "remotes" && !hasConfiguredRemotes && !loading && (
+          <section className={styles.emptyState} aria-label="No remotes detected">
             <p className={styles.empty}>
-              No Module Federation runtime was detected on this page.
+              No remotes were found on this page.
             </p>
             <p className={styles.emptyDetail}>
-              This extension can only inspect pages that expose Module Federation runtime data.
+              This usually means the current route/session does not expose Module Federation remote data.
             </p>
             <ul className={styles.emptyList}>
               <li>The app exposes <code>window.__FEDERATION__</code> at runtime (for example from <code>@module-federation/enhanced</code>).</li>
@@ -229,7 +264,7 @@ export const Popup = () => {
             </p>
           </section>
         )}
-        {!error && hasFederation && activeTab === "remotes" && (
+        {!error && hasFederation && activeTab === "remotes" && hasConfiguredRemotes && (
           <section
             className={`${styles.remotesContent} ${styles.tabPanel}`}
             role="tabpanel"
@@ -237,20 +272,15 @@ export const Popup = () => {
             aria-labelledby={remotesTabId}
           >
             <div className={styles.remotesHeader}>
-              <p className={styles.count}>
-                {totalRemotes > 0
-                  ? `Showing ${totalRemotes} ${showConfigured ? "configured" : "fetched"} remote${totalRemotes !== 1 ? "s" : ""}`
-                  : "No remotes to show"}
-              </p>
-              <label className={styles.toggle}>
-                <input
-                  type="checkbox"
-                  checked={showConfigured}
-                  onChange={(e) => setShowConfigured(e.target.checked)}
-                  aria-describedby="show-configured-help"
-                />
-                <span>Show configured remotes too</span>
-              </label>
+              <button
+                type="button"
+                className={`${styles.toggleBtn} ${showConfigured ? styles.toggleBtnActive : ""}`}
+                onClick={() => setShowConfigured((prev) => !prev)}
+                aria-pressed={showConfigured}
+                aria-describedby="show-configured-help"
+              >
+                {showConfigured ? "Hide configured and remote-loaded remotes" : "Show configured and remote-loaded remotes"}
+              </button>
             </div>
             <p id="show-configured-help" className={styles.toggleHelp}>
               Useful when remotes are configured but have not been fetched yet.
@@ -259,7 +289,7 @@ export const Popup = () => {
               <p className={styles.empty}>
                 {showConfigured
                   ? "No remotes are configured."
-                  : allRemotesFromHost.length + allRemotesFromRemotes.length > 0
+                  : configuredRemotesTotal > 0
                     ? "No remotes have been fetched yet. Turn on “Show configured remotes too” to inspect configured entries."
                     : "No remotes are connected. The host application may not define remotes."}
               </p>
