@@ -13,17 +13,20 @@ export const SharedDepsTab: React.FC<SharedDepsTabProps> = ({ sharedDeps }) => {
   return (
     <div className={styles.tab}>
       {sharedDeps.length === 0 && (
-        <p className={styles.empty}>No shared dependencies detected in the runtime.</p>
+        <p className={styles.empty}>No shared dependencies were detected in the runtime.</p>
       )}
       {sharedDeps.length > 0 && (
         <>
+          <p className={styles.summary}>
+            {sharedDeps.length} shared dependenc{sharedDeps.length === 1 ? "y" : "ies"} found. Prioritize mismatches first to prevent runtime drift.
+          </p>
           {mismatches.length > 0 && (
             <div className={styles.section}>
               <h3 className={styles.sectionTitleMismatch}>
                 Version mismatches ({mismatches.length})
               </h3>
               <p className={styles.hint}>
-                Teams may need to align on these versions.
+                Review and align these versions across host and remotes.
               </p>
               <ul className={styles.list}>
                 {mismatches.map((dep) => (
@@ -37,6 +40,7 @@ export const SharedDepsTab: React.FC<SharedDepsTabProps> = ({ sharedDeps }) => {
               <h3 className={styles.sectionTitleOk}>
                 In sync ({inSync.length})
               </h3>
+              <p className={styles.hint}>These shared dependencies are currently aligned.</p>
               <ul className={styles.list}>
                 {inSync.map((dep) => (
                   <SharedDepCard key={dep.sharedName} dep={dep} isMismatch={false} />
@@ -61,7 +65,7 @@ function SharedDepCard({
     <li className={`${styles.card} ${isMismatch ? styles.mismatch : styles.ok}`}>
       <div className={styles.name}>{dep.sharedName}</div>
       <div className={styles.versions}>
-        {dep.versions.join(" ≠ ")}
+        Versions: {dep.versions.join(" / ")}
       </div>
       <div className={styles.modules}>
         {dep.modules.map((u) => (

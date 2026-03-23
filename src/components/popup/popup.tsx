@@ -153,79 +153,105 @@ export const Popup = () => {
     ? allRemotesFromRemotes
     : allRemotesFromRemotes.filter((r) => isFetched(r.entry));
   const totalRemotes = remotesFromHost.length + remotesFromRemotes.length;
+  const remotesTabId = "mf-tab-remotes";
+  const sharedDepsTabId = "mf-tab-shared-deps";
+  const remotesPanelId = "mf-panel-remotes";
+  const sharedDepsPanelId = "mf-panel-shared-deps";
 
   return (
-    <div className={styles.popup}>
+    <div className={styles.popup} aria-label="Module Federation inspector">
       <header className={styles.header}>
-        <h1 className={styles.title}>Module Federation</h1>
+        <h1 className={styles.title}>Module Federation Inspector</h1>
         <button
           className={styles.refreshBtn}
           onClick={refresh}
           disabled={loading}
-          title="Refresh"
+          title="Refresh scan results"
+          aria-label="Refresh scan results"
         >
-          {loading ? "…" : "↻"}
+          {loading ? "Scanning..." : "Refresh"}
         </button>
       </header>
 
-      <nav className={styles.tabs}>
+      <nav className={styles.tabs} role="tablist" aria-label="Inspector sections">
         <button
           className={`${styles.tab} ${activeTab === "remotes" ? styles.tabActive : ""}`}
           onClick={() => setActiveTab("remotes")}
+          id={remotesTabId}
+          role="tab"
+          aria-selected={activeTab === "remotes"}
+          aria-controls={remotesPanelId}
         >
           Remotes
         </button>
         <button
           className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""}`}
           onClick={() => setActiveTab("shared-deps")}
+          id={sharedDepsTabId}
+          role="tab"
+          aria-selected={activeTab === "shared-deps"}
+          aria-controls={sharedDepsPanelId}
         >
-          Shared deps
+          Shared dependencies
           {mismatchCount > 0 && (
-            <span className={styles.badge}>{mismatchCount}</span>
+            <span className={styles.badge} aria-label={`${mismatchCount} version mismatches`}>
+              {mismatchCount}
+            </span>
           )}
         </button>
       </nav>
 
-      <main className={styles.main}>
+      <main className={styles.main} aria-live="polite">
         {error && (
-          <p className={styles.error}>{error}</p>
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
         )}
         {!error && !hasFederation && !loading && (
           <p className={styles.empty}>
-            No Module Federation runtime detected on this page.
+            No Module Federation runtime was detected on this page.
           </p>
         )}
         {!error && hasFederation && activeTab === "remotes" && (
-          <div className={styles.remotesContent}>
+          <section
+            className={`${styles.remotesContent} ${styles.tabPanel}`}
+            role="tabpanel"
+            id={remotesPanelId}
+            aria-labelledby={remotesTabId}
+          >
             <div className={styles.remotesHeader}>
               <p className={styles.count}>
                 {totalRemotes > 0
-                  ? `${totalRemotes} remote${totalRemotes !== 1 ? "s" : ""} ${showConfigured ? "configured" : "fetched"}`
-                  : "Remotes"}
+                  ? `Showing ${totalRemotes} ${showConfigured ? "configured" : "fetched"} remote${totalRemotes !== 1 ? "s" : ""}`
+                  : "No remotes to show"}
               </p>
               <label className={styles.toggle}>
                 <input
                   type="checkbox"
                   checked={showConfigured}
                   onChange={(e) => setShowConfigured(e.target.checked)}
+                  aria-describedby="show-configured-help"
                 />
-                <span>Include configured</span>
+                <span>Show configured remotes too</span>
               </label>
             </div>
+            <p id="show-configured-help" className={styles.toggleHelp}>
+              Useful when remotes are configured but have not been fetched yet.
+            </p>
             {totalRemotes === 0 && (
               <p className={styles.empty}>
                 {showConfigured
-                  ? "No remotes configured."
+                  ? "No remotes are configured."
                   : allRemotesFromHost.length + allRemotesFromRemotes.length > 0
-                    ? "No remotes fetched yet. Enable “Include configured” to see all configured remotes."
-                    : "No remotes connected. The host may not have remotes configured."}
+                    ? "No remotes have been fetched yet. Turn on “Show configured remotes too” to inspect configured entries."
+                    : "No remotes are connected. The host application may not define remotes."}
               </p>
             )}
             {totalRemotes > 0 && (
               <>
                 {remotesFromHost.length > 0 && (
                   <div className={styles.group}>
-                    <h3 className={styles.groupTitle}>From host</h3>
+                    <h3 className={styles.groupTitle}>Defined by the host application</h3>
                     <ul className={styles.list}>
                       {remotesFromHost.map((r, i) => (
                         <li key={`host-${r.entry}-${i}`}>
@@ -237,7 +263,7 @@ export const Popup = () => {
                 )}
                 {remotesFromRemotes.length > 0 && (
                   <div className={styles.group}>
-                    <h3 className={styles.groupTitle}>Loaded by remotes</h3>
+                    <h3 className={styles.groupTitle}>Loaded by other remotes</h3>
                     <ul className={styles.list}>
                       {remotesFromRemotes.map((r, i) => (
                         <li key={`remote-${r.entry}-${i}`}>
@@ -249,10 +275,17 @@ export const Popup = () => {
                 )}
               </>
             )}
-          </div>
+          </section>
         )}
         {!error && hasFederation && activeTab === "shared-deps" && (
-          <SharedDepsTab sharedDeps={sharedDeps} />
+          <section
+            className={styles.tabPanel}
+            role="tabpanel"
+            id={sharedDepsPanelId}
+            aria-labelledby={sharedDepsTabId}
+          >
+            <SharedDepsTab sharedDeps={sharedDeps} />
+          </section>
         )}
       </main>
     </div>

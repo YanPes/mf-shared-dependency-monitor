@@ -8,14 +8,15 @@ type RemoteCardProps = {
 
 export const RemoteCard: React.FC<RemoteCardProps> = ({ remote }) => {
   const displayName = remote.alias || remote.name;
+  const ownerLabel = remote.loadedBy ? `Loaded by ${remote.loadedBy}` : `Host ${remote.hostName}`;
 
   return (
-    <div className={styles.card}>
+    <article className={styles.card} aria-label={`Remote ${displayName}`}>
       <div className={styles.header}>
-        <span className={styles.name}>{displayName}</span>
+        <h4 className={styles.name}>{displayName}</h4>
         {remote.alias && (
           <span className={styles.alias} title={`Internal name: ${remote.name}`}>
-            → {remote.name}
+            Internal id: {remote.name}
           </span>
         )}
       </div>
@@ -26,15 +27,16 @@ export const RemoteCard: React.FC<RemoteCardProps> = ({ remote }) => {
           rel="noopener noreferrer"
           className={styles.link}
           title={remote.entry}
+          aria-label={`Open remote entry URL for ${displayName}`}
         >
           {remote.entry}
         </a>
       </div>
       {(remote.hostName || remote.loadedBy) && (
-        <div className={styles.host}>
-          {remote.loadedBy ? `Loaded by: ${remote.loadedBy}` : `Host: ${remote.hostName}`}
+        <div className={styles.host} aria-label={ownerLabel}>
+          {ownerLabel}
         </div>
       )}
-    </div>
+    </article>
   );
 };
