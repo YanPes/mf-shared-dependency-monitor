@@ -147,6 +147,10 @@ export const Popup = () => {
   const mismatchCount = sharedDeps.filter((s) => s.hasMismatch).length;
 
   const isFetched = (entry: string) => fetchedEntryUrls.has(entry);
+  const fetchedTotal =
+    allRemotesFromHost.filter((r) => isFetched(r.entry)).length +
+    allRemotesFromRemotes.filter((r) => isFetched(r.entry)).length;
+  const configuredTotal = allRemotesFromHost.length + allRemotesFromRemotes.length;
   const remotesFromHost = showConfigured
     ? allRemotesFromHost
     : allRemotesFromHost.filter((r) => isFetched(r.entry));
@@ -154,6 +158,14 @@ export const Popup = () => {
     ? allRemotesFromRemotes
     : allRemotesFromRemotes.filter((r) => isFetched(r.entry));
   const totalRemotes = remotesFromHost.length + remotesFromRemotes.length;
+  const pageHost = (() => {
+    if (!data?.pageUrl) return null;
+    try {
+      return new URL(data.pageUrl).host;
+    } catch (_) {
+      return null;
+    }
+  })();
   const remotesTabId = "mf-tab-remotes";
   const sharedDepsTabId = "mf-tab-shared-deps";
   const remotesPanelId = "mf-panel-remotes";
@@ -162,7 +174,13 @@ export const Popup = () => {
   return (
     <div className={styles.popup} aria-label="Module Federation inspector">
       <header className={styles.header}>
-        <h1 className={styles.title}>Module Federation Inspector</h1>
+        <div className={styles.titleWrap}>
+          <p className={styles.eyebrow}>Runtime observability</p>
+          <h1 className={styles.title}>Module Federation Shared Dependency Monitor</h1>
+          <p className={styles.subtitle}>
+            {pageHost ? `Inspecting ${pageHost}` : "Inspecting active browser tab"}
+          </p>
+        </div>
         <button
           className={styles.refreshBtn}
           onClick={refresh}
@@ -205,6 +223,23 @@ export const Popup = () => {
           )}
         </button>
       </nav>
+
+      {!error && hasFederation && (
+        <section className={styles.metrics} aria-label="Runtime summary">
+          <article className={styles.metricCard}>
+            <p className={styles.metricLabel}>Fetched remotes</p>
+            <p className={styles.metricValue}>{fetchedTotal}</p>
+          </article>
+          <article className={styles.metricCard}>
+            <p className={styles.metricLabel}>Configured remotes</p>
+            <p className={styles.metricValue}>{configuredTotal}</p>
+          </article>
+          <article className={`${styles.metricCard} ${mismatchCount > 0 ? styles.metricWarn : styles.metricOk}`}>
+            <p className={styles.metricLabel}>Version mismatches</p>
+            <p className={styles.metricValue}>{mismatchCount}</p>
+          </article>
+        </section>
+      )}
 
       <main className={styles.main} aria-live="polite">
         {error && (
