@@ -150,6 +150,36 @@
   padding: 8px 0;
 }
 
+.emptyState {
+  color: var(--text-secondary);
+  display: grid;
+  gap: 8px;
+}
+
+.emptyDetail {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.emptyList {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.emptyList li {
+  margin: 0 0 4px;
+}
+
+.emptyList code {
+  font-size: 12px;
+  color: var(--accent-strong);
+}
+
 .remotesHeader {
   display: flex;
   flex-direction: column;

@@ -208,9 +208,21 @@ export const Popup = () => {
           </p>
         )}
         {!error && !hasFederation && !loading && (
-          <p className={styles.empty}>
-            No Module Federation runtime was detected on this page.
-          </p>
+          <section className={styles.emptyState} aria-label="No runtime detected">
+            <p className={styles.empty}>
+              No Module Federation runtime was detected on this page.
+            </p>
+            <p className={styles.emptyDetail}>
+              This extension can only inspect pages that expose Module Federation runtime data.
+            </p>
+            <ul className={styles.emptyList}>
+              <li>The app exposes <code>window.__FEDERATION__</code> at runtime (for example from <code>@module-federation/enhanced</code>).</li>
+              <li>Or the page fetches federation files such as <code>remoteEntry*.js</code> or <code>mf-manifest*.json</code>.</li>
+            </ul>
+            <p className={styles.emptyDetail}>
+              If your app loads remotes after navigation or login, wait for the app to finish booting and press Refresh.
+            </p>
+          </section>
         )}
         {!error && hasFederation && activeTab === "remotes" && (
           <section
