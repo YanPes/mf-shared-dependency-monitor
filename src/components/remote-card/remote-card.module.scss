@@ -1,24 +1,24 @@
 .card {
-  border: 1px solid rgba(120, 151, 188, 0.42);
+  border: 1px solid var(--color-card-border);
   border-radius: 12px;
   padding: 14px 15px;
   background:
-    linear-gradient(180deg, rgba(36, 55, 79, 0.68) 0%, rgba(28, 44, 65, 0.58) 100%),
-    rgba(18, 30, 45, 0.78);
+    linear-gradient(180deg, var(--color-card-top) 0%, var(--color-card-bottom) 100%),
+    var(--color-card-base);
   box-shadow:
-    0 1px 0 rgba(184, 220, 255, 0.12) inset,
-    0 8px 18px rgba(3, 8, 15, 0.22);
+    0 1px 0 var(--color-card-shadow-top) inset,
+    0 8px 18px var(--color-card-shadow-main);
   transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 
   &:hover {
     background:
-      linear-gradient(180deg, rgba(45, 69, 99, 0.72) 0%, rgba(36, 57, 83, 0.63) 100%),
-      rgba(24, 39, 58, 0.82);
-    border-color: rgba(151, 190, 235, 0.66);
+      linear-gradient(180deg, var(--color-card-hover-top) 0%, var(--color-card-hover-bottom) 100%),
+      var(--color-card-hover-base);
+    border-color: var(--color-card-border-hover);
     transform: translateY(-1px);
     box-shadow:
-      0 1px 0 rgba(192, 226, 255, 0.16) inset,
-      0 12px 22px rgba(4, 11, 20, 0.3);
+      0 1px 0 var(--color-card-shadow-hover-top) inset,
+      0 12px 22px var(--color-card-shadow-hover-main);
   }
 }
 
@@ -35,14 +35,14 @@
   font-weight: 700;
   font-size: 15px;
   line-height: 1.3;
-  color: #edf7ff;
+  color: var(--color-card-title);
 }
 
 .alias {
   font-size: 12px;
-  color: #9bcabf;
-  background: rgba(30, 68, 64, 0.45);
-  border: 1px solid rgba(104, 206, 191, 0.4);
+  color: var(--color-alias-text);
+  background: var(--color-alias-bg);
+  border: 1px solid var(--color-alias-border);
   border-radius: 999px;
   padding: 2px 8px;
 }
@@ -53,17 +53,17 @@
 
 .link {
   font-size: 13px;
-  color: #a8e8ff;
+  color: var(--color-link);
   word-break: break-all;
-  text-decoration-color: rgba(168, 232, 255, 0.62);
+  text-decoration-color: var(--color-link-underline);
   text-underline-offset: 2px;
 
   &:hover {
-    color: #d3f6ff;
+    color: var(--color-link-hover);
   }
 
   &:focus-visible {
-    outline: 2px solid #8de9da;
+    outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -71,7 +71,7 @@
 
 .host {
   font-size: 12px;
-  color: #b7c7dc;
+  color: var(--color-host-text);
   margin-top: 10px;
   letter-spacing: 0.01em;
 }

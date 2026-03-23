@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rsbuild start",
-    "build": "rsbuild build && node scripts/postbuild.js"
+    "build": "rsbuild build && node scripts/postbuild.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck"
   },
   "dependencies": {
     "react": "^18",
@@ -14,6 +16,8 @@
     "@rsbuild/plugin-react": "^1.3.4",
     "@rsbuild/plugin-sass": "^1.3.3",
     "@types/chrome": "^0.1.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "chrome-types": "^0.1.361",
     "typescript": "^5.8.3"
   }

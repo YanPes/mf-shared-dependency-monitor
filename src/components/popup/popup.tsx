@@ -125,17 +125,6 @@ export const Popup = () => {
 
   useEffect(() => {
     refresh();
-
-    const listener = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      area: string
-    ) => {
-      if (area === "local" && changes.mfRemotes?.newValue) {
-        setData(changes.mfRemotes.newValue as MFRemotesPayload);
-      }
-    };
-    chrome.storage.onChanged.addListener(listener);
-    return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
 
   const allRemotesFromHost = data?.remotesFromHost ?? [];

@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Popup } from "../components/popup/popup.tsx";
+import "./tokens.css";
+import { Popup } from "../components/popup/popup";
 
 const POPUP_WIDTH = 800;
 const POPUP_HEIGHT = 600;
