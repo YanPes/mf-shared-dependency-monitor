@@ -216,24 +216,32 @@ export const Popup = () => {
         </button>
       </nav>
 
-      {!error && hasFederation && (
-        <section className={styles.metrics} aria-label="Runtime summary">
-          <article className={styles.metricCard}>
-            <p className={styles.metricLabel}>Fetched remotes</p>
-            <p className={styles.metricValue}>{fetchedTotal}</p>
-          </article>
-          <article className={styles.metricCard}>
-            <p className={styles.metricLabel}>Configured remotes</p>
-            <p className={styles.metricValue}>{configuredTotal}</p>
-          </article>
-          <article className={`${styles.metricCard} ${mismatchCount > 0 ? styles.metricWarn : styles.metricOk}`}>
-            <p className={styles.metricLabel}>Version mismatches</p>
-            <p className={styles.metricValue}>{mismatchCount}</p>
-          </article>
-        </section>
-      )}
-
       <main className={styles.main} aria-live="polite">
+        {!error && hasFederation && (
+          <section className={styles.metrics} aria-label="Runtime summary">
+            <article className={styles.metricCard}>
+              <p className={styles.metricLabel}>Fetched remotes</p>
+              <p className={styles.metricValue}>{fetchedTotal}</p>
+            </article>
+            <article className={styles.metricCard}>
+              <p className={styles.metricLabel}>Configured remotes</p>
+              <p className={styles.metricValue}>{configuredTotal}</p>
+            </article>
+            <button
+              type="button"
+              className={`${styles.metricCard} ${styles.metricAction} ${mismatchCount > 0 ? styles.metricWarn : styles.metricOk}`}
+              onClick={() => {
+                if (!sharedDepsDisabled) setActiveTab("shared-deps");
+              }}
+              disabled={sharedDepsDisabled}
+              aria-label="Open Shared dependencies tab"
+              title={sharedDepsDisabled ? "Shared dependencies are not available" : "Open Shared dependencies"}
+            >
+              <p className={styles.metricLabel}>Version mismatches</p>
+              <p className={styles.metricValue}>{mismatchCount}</p>
+            </button>
+          </section>
+        )}
         {error && (
           <p className={styles.error} role="alert">
             {error}
