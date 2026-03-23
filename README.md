@@ -1,5 +1,4 @@
-# Module Federation Inspector
-
+# Module Federation Shared Dependency Monitor
 > **Disclaimer:** This extension is still under development and is **not published yet** on the Chrome Web Store or Firefox Add-ons store.
 
 Browser extension for teams running micro-frontends with Module Federation.
