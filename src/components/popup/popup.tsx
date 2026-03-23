@@ -132,14 +132,17 @@ export const Popup = () => {
   const fetchedEntryUrls = new Set(data?.fetchedEntryUrls ?? []);
   const sharedDeps = data?.sharedDependencies ?? [];
   const hasFederation = data?.hasFederation ?? false;
-  const sharedDepsDisabled = !loading && !hasFederation;
   const mismatchCount = sharedDeps.filter((s) => s.hasMismatch).length;
+  const configuredRemotesTotal = allRemotesFromHost.length + allRemotesFromRemotes.length;
+  const hasConfiguredRemotes = configuredRemotesTotal > 0;
+  const sharedDepsBlockedByNoRemotes = !loading && !hasConfiguredRemotes;
+  const sharedDepsDisabled = !loading && (!hasFederation || sharedDepsBlockedByNoRemotes);
 
   const isFetched = (entry: string) => fetchedEntryUrls.has(entry);
   const fetchedTotal =
     allRemotesFromHost.filter((r) => isFetched(r.entry)).length +
     allRemotesFromRemotes.filter((r) => isFetched(r.entry)).length;
-  const configuredTotal = allRemotesFromHost.length + allRemotesFromRemotes.length;
+  const configuredTotal = configuredRemotesTotal;
   const remotesFromHost = showConfigured
     ? allRemotesFromHost
     : allRemotesFromHost.filter((r) => isFetched(r.entry));
@@ -193,7 +196,7 @@ export const Popup = () => {
           Remotes
         </button>
         <button
-          className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""}`}
+          className={`${styles.tab} ${activeTab === "shared-deps" ? styles.tabActive : ""} ${sharedDepsBlockedByNoRemotes ? styles.tabDisabledNoRemotes : ""}`}
           onClick={() => {
             if (!sharedDepsDisabled) setActiveTab("shared-deps");
           }}
@@ -236,13 +239,13 @@ export const Popup = () => {
             {error}
           </p>
         )}
-        {!error && !hasFederation && !loading && (
-          <section className={styles.emptyState} aria-label="No runtime detected">
+        {!error && activeTab === "remotes" && !hasConfiguredRemotes && !loading && (
+          <section className={styles.emptyState} aria-label="No remotes detected">
             <p className={styles.empty}>
-              No Module Federation runtime was detected on this page.
+              No remotes were found on this page.
             </p>
             <p className={styles.emptyDetail}>
-              This extension can only inspect pages that expose Module Federation runtime data.
+              This usually means the current route/session does not expose Module Federation remote data.
             </p>
             <ul className={styles.emptyList}>
               <li>The app exposes <code>window.__FEDERATION__</code> at runtime (for example from <code>@module-federation/enhanced</code>).</li>
@@ -253,7 +256,7 @@ export const Popup = () => {
             </p>
           </section>
         )}
-        {!error && hasFederation && activeTab === "remotes" && (
+        {!error && hasFederation && activeTab === "remotes" && hasConfiguredRemotes && (
           <section
             className={`${styles.remotesContent} ${styles.tabPanel}`}
             role="tabpanel"
@@ -283,7 +286,7 @@ export const Popup = () => {
               <p className={styles.empty}>
                 {showConfigured
                   ? "No remotes are configured."
-                  : allRemotesFromHost.length + allRemotesFromRemotes.length > 0
+                  : configuredRemotesTotal > 0
                     ? "No remotes have been fetched yet. Turn on “Show configured remotes too” to inspect configured entries."
                     : "No remotes are connected. The host application may not define remotes."}
               </p>

@@ -127,6 +127,10 @@
   }
 }
 
+.tabDisabledNoRemotes {
+  cursor: not-allowed;
+}
+
 .badge {
   margin-left: 6px;
   padding: 1px 7px;
@@ -199,7 +203,7 @@
     var(--color-metric-bg-base);
   border-radius: 10px;
   padding: 11px 12px;
-  min-height: 68px;
+  min-height: 48px;
   display: grid;
   align-content: center;
   gap: 3px;
