@@ -272,20 +272,15 @@ export const Popup = () => {
             aria-labelledby={remotesTabId}
           >
             <div className={styles.remotesHeader}>
-              <p className={styles.count}>
-                {totalRemotes > 0
-                  ? `Showing ${totalRemotes} ${showConfigured ? "configured" : "fetched"} remote${totalRemotes !== 1 ? "s" : ""}`
-                  : "No remotes to show"}
-              </p>
-              <label className={styles.toggle}>
-                <input
-                  type="checkbox"
-                  checked={showConfigured}
-                  onChange={(e) => setShowConfigured(e.target.checked)}
-                  aria-describedby="show-configured-help"
-                />
-                <span>Show configured remotes too</span>
-              </label>
+              <button
+                type="button"
+                className={`${styles.toggleBtn} ${showConfigured ? styles.toggleBtnActive : ""}`}
+                onClick={() => setShowConfigured((prev) => !prev)}
+                aria-pressed={showConfigured}
+                aria-describedby="show-configured-help"
+              >
+                {showConfigured ? "Hide configured and remote-loaded remotes" : "Show configured and remote-loaded remotes"}
+              </button>
             </div>
             <p id="show-configured-help" className={styles.toggleHelp}>
               Useful when remotes are configured but have not been fetched yet.
