@@ -1,5 +1,5 @@
 # Module Federation Shared Dependency Monitor
-> **Disclaimer:** This extension is still under development and is **not published yet** on the Chrome Web Store or Firefox Add-ons store.
+> Browser extension for inspecting live Module Federation remotes and shared dependency drift.
 
 Browser extension for teams running micro-frontends with Module Federation.
 
@@ -48,29 +48,13 @@ The extension executes a page-context extractor and merges data across frames:
 - falls back to performance resource entries (`remoteEntry.js`, `mf-manifest.json`)
 - aggregates remotes and shared dependency versions into one popup view
 
-## Install
 
-### Chrome (Manifest V3)
+### Chrome Web Store notes
 
-1. Build:
-   ```bash
-   npm install
-   npm run build
-   ```
-2. Open `chrome://extensions`
-3. Enable `Developer mode`
-4. Click `Load unpacked` and select the `dist` folder
-
-### Firefox
-
-1. Build:
-   ```bash
-   npm install
-   npm run build
-   ```
-2. Open `about:debugging#/runtime/this-firefox`
-3. Click `Load Temporary Add-on`
-4. Select `dist/manifest.json`
+- The package is Chrome-ready from `dist/`.
+- Permissions are limited to the active tab workflow (`activeTab`, `scripting`, `tabs`).
+- The extension does not send scan data off-device.
+- Privacy policy page: `https://yanpes.github.io/mf-shared-dependency-monitor/privacy-policy/`
 
 ## Usage
 
