@@ -1,5 +1,6 @@
 # Module Federation Shared Dependency Monitor
 > Browser extension for inspecting live Module Federation remotes and shared dependency drift.
+> https://chromewebstore.google.com/detail/module-federation-shared/iihmjeoimfipagokghlfeighikoonila
 
 Browser extension for teams running micro-frontends with Module Federation.
 
