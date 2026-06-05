@@ -2,6 +2,12 @@
 > Browser extension for inspecting live Module Federation remotes and shared dependency drift.
 > https://chromewebstore.google.com/detail/module-federation-shared/iihmjeoimfipagokghlfeighikoonila
 
+<img width="640" height="400" alt="image" src="https://github.com/user-attachments/assets/7246542a-6aa8-4455-8308-2d3ed3d562ae" />
+<img width="640" height="400" alt="image" src="https://github.com/user-attachments/assets/8c1c0a7d-c060-4b3f-97b8-abd307d92c1b" />
+<img width="640" height="400" alt="image" src="https://github.com/user-attachments/assets/aa3128be-ed1b-4ea4-9325-5e102fad399a" />
+
+
+
 Browser extension for teams running micro-frontends with Module Federation.
 
 It shows:
