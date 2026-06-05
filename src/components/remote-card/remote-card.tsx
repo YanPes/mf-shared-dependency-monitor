@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./remote-card.module.scss";
+import * as styles from "./remote-card.module.scss";
 import type { RemoteInfo } from "../popup/popup";
 
 type RemoteCardProps = {

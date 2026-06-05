@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import styles from "./popup.module.scss";
+import * as styles from "./popup.module.scss";
 import { RemoteCard } from "../remote-card/remote-card";
 import { SharedDepsTab } from "../shared-deps-tab/shared-deps-tab";
 import { createExtractor } from "../../extractor";

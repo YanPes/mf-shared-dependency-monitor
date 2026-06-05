@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Module Federation Shared Dependency Monitor",
+  "description": "Inspect live Module Federation remotes and shared dependency drift on the current page",
+  "version": "1.0.0",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "tabs"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/favicon-16x16.png",
+      "32": "icons/favicon-32x32.png",
+      "48": "icons/favicon-48x48.png",
+      "128": "icons/favicon-128x128.png"
+    },
+    "default_title": "Module Federation Shared Dependency Monitor"
+  },
+  "icons": {
+    "16": "icons/favicon-16x16.png",
+    "32": "icons/favicon-32x32.png",
+    "48": "icons/favicon-48x48.png",
+    "128": "icons/favicon-128x128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "module-federation-shared-dependency-monitor@yanpes",
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}

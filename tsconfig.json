@@ -12,5 +12,5 @@
     "resolveJsonModule": true,
     "types": ["chrome-types"]
   },
-  "include": ["src", "typings.d.ts", "rsbuild.config.ts"]
+  "include": ["src", "typings.d.ts", "extension-env.d.ts"]
 }

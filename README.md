@@ -56,9 +56,9 @@ The extension executes a page-context extractor and merges data across frames:
 - aggregates remotes and shared dependency versions into one popup view
 
 
-### Chrome Web Store notes
+### Browser store notes
 
-- The package is Chrome-ready from `dist/`.
+- Extension.js builds browser-specific packages under `dist/chrome`, `dist/edge`, and `dist/firefox`.
 - Permissions are limited to the active tab workflow (`activeTab`, `scripting`, `tabs`).
 - The extension does not send scan data off-device.
 - Privacy policy page: `https://yanpes.github.io/mf-shared-dependency-monitor/privacy-policy/`
@@ -78,7 +78,15 @@ npm install
 npm run dev
 ```
 
-Build output goes to `dist/`. Reload the extension after changes.
+`npm run dev` launches Chrome and Firefox through Extension.js. For a single browser, use `npm run dev:chrome`, `npm run dev:firefox`, or `npm run dev:edge`.
+
+Production builds:
+
+```bash
+npm run build
+```
+
+Build output goes to `dist/<browser>/`, with zip packages generated for Chrome, Edge, and Firefox.
 
 ## Limitations
 

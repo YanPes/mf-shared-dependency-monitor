@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./shared-deps-tab.module.scss";
+import * as styles from "./shared-deps-tab.module.scss";
 import type { ExtractedSharedDep } from "../../extractor";
 
 type SharedDepsTabProps = {
