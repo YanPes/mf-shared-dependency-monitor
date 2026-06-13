@@ -5,19 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Module Federation Shared Dependency Monitor</title>
   <style>
+    :root {
+      --popup-width: 800px;
+      --popup-height: 600px;
+      box-sizing: border-box;
+    }
+
+    @supports (-moz-appearance: none) {
+      :root {
+        --popup-width: 760px;
+        --popup-height: 580px;
+      }
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit;
+    }
+
     html,
     body {
       margin: 0;
-      width: 800px;
-      height: 600px;
+      width: var(--popup-width);
+      height: var(--popup-height);
       overflow: hidden;
       background: #0f1725;
       color: #e8f0fb;
     }
 
     #root {
-      width: 800px;
-      height: 600px;
+      width: var(--popup-width);
+      height: var(--popup-height);
       overflow: hidden;
     }
   </style>
